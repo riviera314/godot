@@ -205,9 +205,9 @@ Viewport::GUI::GUI() {
 void Viewport::_update_stretch_transform() {
 	if (size_override_stretch && size_override) {
 		stretch_transform = Transform2D();
-		Size2 scale = size / (size_override_size + size_override_margin * 2);
+		Size2 scale = size / (size_override_size + size_override_margin);
 		stretch_transform.scale(scale);
-		stretch_transform.elements[2] = size_override_margin * scale;
+		stretch_transform.elements[2] = size_offset * scale;
 
 	} else {
 		stretch_transform = Transform2D();
@@ -1303,6 +1303,22 @@ void Viewport::set_size_override(bool p_enable, const Size2 &p_size, const Vecto
 Size2 Viewport::get_size_override() const {
 	return size_override_size;
 }
+
+void Viewport::set_size_offset(const Size2 &p_size) {
+	if (p_size == size_offset) {
+		return;
+	}
+	size_offset = p_size;
+
+	_update_stretch_transform();
+	emit_signal("size_changed");
+}
+
+Size2 Viewport::get_size_offset() const {
+	return size_offset;
+}
+
+
 bool Viewport::is_size_override_enabled() const {
 	return size_override;
 }
@@ -3382,6 +3398,8 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_size_override", "enable", "size", "margin"), &Viewport::set_size_override, DEFVAL(Size2(-1, -1)), DEFVAL(Size2(0, 0)));
 	ClassDB::bind_method(D_METHOD("get_size_override"), &Viewport::get_size_override);
+	ClassDB::bind_method(D_METHOD("set_size_offset", "size"), &Viewport::set_size_offset);
+	ClassDB::bind_method(D_METHOD("get_size_offset"), &Viewport::get_size_offset);
 	ClassDB::bind_method(D_METHOD("is_size_override_enabled"), &Viewport::is_size_override_enabled);
 	ClassDB::bind_method(D_METHOD("set_size_override_stretch", "enabled"), &Viewport::set_size_override_stretch);
 	ClassDB::bind_method(D_METHOD("is_size_override_stretch_enabled"), &Viewport::is_size_override_stretch_enabled);

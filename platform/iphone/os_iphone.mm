@@ -673,6 +673,10 @@ Rect2 OSIPhone::get_window_safe_area() const {
 		Size2i insets_position = Size2i(insets.left, insets.top) * scale;
 		Size2i insets_size = Size2i(insets.left + insets.right, insets.top + insets.bottom) * scale;
 
+		if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE) {
+			insets_size.height = 0;
+		}
+
 		return Rect2i(insets_position, get_window_size() - insets_size);
 	} else {
 		return Rect2i(Size2i(0, 0), get_window_size());

@@ -48,6 +48,8 @@ import android.util.Log;
 import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.WindowInsets;
+import android.view.RoundedCorner;
+import android.graphics.Insets;
 
 import androidx.core.content.FileProvider;
 
@@ -187,13 +189,34 @@ public class GodotIO {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 			WindowInsets insets = activity.getWindow().getDecorView().getRootWindowInsets();
 			DisplayCutout cutout = insets.getDisplayCutout();
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+				if(getScreenOrientation() == SCREEN_LANDSCAPE){
+					final RoundedCorner topRight = insets.getRoundedCorner(RoundedCorner.POSITION_TOP_RIGHT);
+					if (topRight != null) {
+						result[2] -= topRight.getRadius();
+					}
+				}
+				else {
+					Insets navBarInset = insets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
+					if (navBarInset != null) {
+						result[3] -= navBarInset.bottom;
+					}
+				}
+			}
 			if (cutout != null) {
 				int insetLeft = cutout.getSafeInsetLeft();
 				int insetTop = cutout.getSafeInsetTop();
 				result[0] = insetLeft;
 				result[1] = insetTop;
-				result[2] -= insetLeft + cutout.getSafeInsetRight();
-				result[3] -= insetTop + cutout.getSafeInsetBottom();
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+					result[2] -= insetLeft + cutout.getSafeInsetRight();
+					result[3] -= insetTop + cutout.getSafeInsetBottom();
+				}
+				else {
+					result[2] -= insetLeft*2;
+					result[3] -= insetTop*2;
+				}
 			}
 		}
 		return result;

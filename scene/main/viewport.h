@@ -213,6 +213,7 @@ private:
 	bool size_override_stretch;
 	Size2 size_override_size;
 	Size2 size_override_margin;
+	Size2 size_offset;
 
 	Rect2 last_vp_rect;
 
@@ -495,6 +496,9 @@ public:
 
 	void set_size_override(bool p_enable, const Size2 &p_size = Size2(-1, -1), const Vector2 &p_margin = Vector2());
 	Size2 get_size_override() const;
+
+	void set_size_offset(const Size2 &p_size);
+	Size2 get_size_offset() const;
 
 	bool is_size_override_enabled() const;
 	void set_size_override_stretch(bool p_enable);
