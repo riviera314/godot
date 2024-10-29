@@ -422,17 +422,17 @@ void OS_Android::main_loop_end() {
 }
 
 void OS_Android::main_loop_focusout() {
-	if (main_loop) {
-		main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
-	}
-	audio_driver_android.set_pause(true);
+	// if (main_loop) {
+	// 	main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+	// }
+	// audio_driver_android.set_pause(true);
 }
 
 void OS_Android::main_loop_focusin() {
-	if (main_loop) {
-		main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
-	}
-	audio_driver_android.set_pause(false);
+	// if (main_loop) {
+	// 	main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+	// }
+	// audio_driver_android.set_pause(false);
 }
 
 void OS_Android::process_accelerometer(const Vector3 &p_accelerometer) {

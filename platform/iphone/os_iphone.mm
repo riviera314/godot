@@ -847,7 +847,7 @@ void OSIPhone::on_focus_out() {
 			native_video_focus_out();
 		}
 
-		audio_driver.stop();
+		// audio_driver.stop();
 	}
 }
 
@@ -865,7 +865,7 @@ void OSIPhone::on_focus_in() {
 			native_video_unpause();
 		}
 
-		audio_driver.start();
+		// audio_driver.start();
 	}
 }
 
