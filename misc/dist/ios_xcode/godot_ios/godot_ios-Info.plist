@@ -59,5 +59,9 @@
 	$additional_plist_content
 	$plist_launch_screen_name
 	<key>CADisableMinimumFrameDurationOnPhone</key><true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 </dict>
 </plist>
