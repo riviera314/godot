@@ -314,15 +314,15 @@ public class GodotView extends GLSurfaceView {
 		});
 	}
 
-	void onActivityPaused() {
-		queueEvent(() -> {
-			GodotLib.focusout();
-			// Pause the renderer
-			godotRenderer.onActivityPaused();
-		});
-	}
+	// void onActivityPaused() {
+	// 	queueEvent(() -> {
+	// 		GodotLib.focusout();
+	// 		// Pause the renderer
+	// 		godotRenderer.onActivityPaused();
+	// 	});
+	// }
 
-	void onActivityStopped() {
-		pauseGLThread();
-	}
+	// void onActivityStopped() {
+	// 	pauseGLThread();
+	// }
 }
