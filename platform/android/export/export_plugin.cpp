@@ -187,6 +187,7 @@ static const char *SPLASH_BG_COLOR_PATH = "res/drawable-nodpi/splash_bg_color.pn
 static const char *LEGACY_BUILD_SPLASH_BG_COLOR_PATH = "res/drawable-nodpi-v4/splash_bg_color.png";
 static const char *SPLASH_CONFIG_PATH = "res://android/build/res/drawable/splash_drawable.xml";
 static const char *GDNATIVE_LIBS_PATH = "res://android/build/libs/gdnativelibs.json";
+static const char *NOTIFICATION_ICON_PATH = "res://android/build/res/drawable/notification_icon.png";
 
 static const int icon_densities_count = 6;
 static const char *launcher_icon_option = PNAME("launcher_icons/main_192x192");
@@ -3020,6 +3021,16 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		print_verbose("Updating ANDROID_HOME environment to " + sdk_path);
 		OS::get_singleton()->set_environment("ANDROID_HOME", sdk_path);
+
+		String icon_path = ProjectSettings::get_singleton()->get("plugin/notification/android_icon");
+		if(icon_path != ""){
+			String dst_path = String(NOTIFICATION_ICON_PATH);
+			Vector<uint8_t> data = FileAccess::get_file_as_array(icon_path);
+			print_verbose("Copying notification_icon.png from " + icon_path + " to " + dst_path);
+			Error err = store_file_at_path(dst_path, data);
+			ERR_FAIL_COND_V_MSG(err, err, "Failed to copy notification_icon.png from " + icon_path + " to " + dst_path);
+		}
+
 		String build_command;
 
 #ifdef WINDOWS_ENABLED
