@@ -40,6 +40,7 @@
 class AudioDriverDummy;
 class AudioStream;
 class AudioStreamSample;
+class AudioStreamRepeat;
 
 class AudioDriver {
 	static AudioDriver *singleton;

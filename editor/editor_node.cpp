@@ -103,6 +103,7 @@
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
 #include "editor/import/resource_importer_wav.h"
+#include "editor/import/resource_importer_wav2.h"
 #include "editor/import_dock.h"
 #include "editor/multi_node_edit.h"
 #include "editor/node_dock.h"
@@ -6004,6 +6005,10 @@ EditorNode::EditorNode() {
 		Ref<ResourceImporterWAV> import_wav;
 		import_wav.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_wav);
+
+		Ref<ResourceImporterWAV2> import_wav2;
+		import_wav2.instance();
+		ResourceFormatImporter::get_singleton()->add_importer(import_wav2);
 
 		Ref<ResourceImporterOBJ> import_obj;
 		import_obj.instance();
