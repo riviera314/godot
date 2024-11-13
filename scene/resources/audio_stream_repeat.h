@@ -107,11 +107,12 @@ private:
 	Format format;
 	LoopMode loop_mode;
 	bool stereo;
-	int loop_begin;
-	int loop_end;
+	Vector<int> loop_begin;
+	Vector<int> loop_end;
 	int mix_rate;
 	void *data;
 	uint32_t data_bytes;
+	int loop_index;
 
 protected:
 	static void _bind_methods();
@@ -123,11 +124,11 @@ public:
 	void set_loop_mode(LoopMode p_loop_mode);
 	LoopMode get_loop_mode() const;
 
-	void set_loop_begin(int p_frame);
-	int get_loop_begin() const;
+	void set_loop_begin(Vector<int> p_frame);
+	Vector<int> get_loop_begin() const;
 
-	void set_loop_end(int p_frame);
-	int get_loop_end() const;
+	void set_loop_end(Vector<int> p_frame);
+	Vector<int> get_loop_end() const;
 
 	void set_mix_rate(int p_hz);
 	int get_mix_rate() const;
@@ -144,6 +145,9 @@ public:
 
 	virtual Ref<AudioStreamPlayback> instance_playback();
 	virtual String get_stream_name() const;
+
+	int get_loop_index() const;
+	void set_loop_index(int index);
 
 	AudioStreamRepeat();
 	~AudioStreamRepeat();

@@ -68,21 +68,10 @@ int AudioStreamPlaybackRepeat::get_loop_count() const {
 }
 
 float AudioStreamPlaybackRepeat::get_playback_position() const {
-	return float(offset >> MIX_FRAC_BITS) / base->mix_rate;
+	return offset;
 }
 void AudioStreamPlaybackRepeat::seek(float p_time) {
-	if (base->format == AudioStreamRepeat::FORMAT_IMA_ADPCM) {
-		return; //no seeking in ima-adpcm
-	}
-
-	float max = base->get_length();
-	if (p_time < 0) {
-		p_time = 0;
-	} else if (p_time >= max) {
-		p_time = max - 0.001;
-	}
-
-	offset = uint64_t(p_time * base->mix_rate) << MIX_FRAC_BITS;
+	offset = p_time;
 }
 
 template <class Depth, bool is_stereo, bool is_ima_adpcm>
@@ -247,8 +236,8 @@ void AudioStreamPlaybackRepeat::mix(AudioFrame *p_buffer, float p_rate_scale, in
 
 	/* some 64-bit fixed point precaches */
 
-	int64_t loop_begin_fp = ((int64_t)base->loop_begin << MIX_FRAC_BITS);
-	int64_t loop_end_fp = ((int64_t)base->loop_end << MIX_FRAC_BITS);
+	int64_t loop_begin_fp = ((int64_t)base->loop_begin[base->loop_index] << MIX_FRAC_BITS);
+	int64_t loop_end_fp = ((int64_t)base->loop_end[base->loop_index] << MIX_FRAC_BITS);
 	int64_t length_fp = ((int64_t)len << MIX_FRAC_BITS);
 	int64_t begin_limit = (base->loop_mode != AudioStreamRepeat::LOOP_DISABLED) ? loop_begin_fp : 0;
 	int64_t end_limit = (base->loop_mode != AudioStreamRepeat::LOOP_DISABLED) ? loop_end_fp : length_fp;
@@ -317,6 +306,8 @@ void AudioStreamPlaybackRepeat::mix(AudioFrame *p_buffer, float p_rate_scale, in
 		} else {
 			/* going forward */
 			if (loop_format != AudioStreamRepeat::LOOP_DISABLED && offset >= loop_end_fp) {
+				base->loop_index = (base->loop_index + 1)%base->loop_end.size();
+				loop_begin_fp = ((int64_t)base->loop_begin[base->loop_index] << MIX_FRAC_BITS);
 				/* loopend reached */
 
 				if (loop_format == AudioStreamRepeat::LOOP_PING_PONG) {
@@ -338,6 +329,10 @@ void AudioStreamPlaybackRepeat::mix(AudioFrame *p_buffer, float p_rate_scale, in
 						offset = loop_begin_fp + (offset - loop_end_fp);
 					}
 				}
+				loop_end_fp = ((int64_t)base->loop_end[base->loop_index] << MIX_FRAC_BITS);
+
+				begin_limit = (base->loop_mode != AudioStreamRepeat::LOOP_DISABLED) ? loop_begin_fp : 0;
+				end_limit = (base->loop_mode != AudioStreamRepeat::LOOP_DISABLED) ? loop_end_fp : length_fp;
 			} else {
 				/* no loop, check for end of sample */
 				if (offset >= length_fp) {
@@ -425,17 +420,20 @@ AudioStreamRepeat::LoopMode AudioStreamRepeat::get_loop_mode() const {
 	return loop_mode;
 }
 
-void AudioStreamRepeat::set_loop_begin(int p_frame) {
+void AudioStreamRepeat::set_loop_begin(Vector<int> p_frame) {
 	loop_begin = p_frame;
 }
-int AudioStreamRepeat::get_loop_begin() const {
+Vector<int> AudioStreamRepeat::get_loop_begin() const {
 	return loop_begin;
 }
 
-void AudioStreamRepeat::set_loop_end(int p_frame) {
+void AudioStreamRepeat::set_loop_end(Vector<int> p_frame) {
 	loop_end = p_frame;
+	if(loop_index >= p_frame.size()){
+		loop_index -= (loop_index - p_frame.size())+1;
+	}
 }
-int AudioStreamRepeat::get_loop_end() const {
+Vector<int> AudioStreamRepeat::get_loop_end() const {
 	return loop_end;
 }
 
@@ -590,6 +588,14 @@ Error AudioStreamRepeat::save_to_wav(const String &p_path) {
 	return OK;
 }
 
+int AudioStreamRepeat::get_loop_index() const {
+	return loop_index;
+}
+
+void AudioStreamRepeat::set_loop_index(int index) {
+	loop_index = index;
+}
+
 Ref<AudioStreamPlayback> AudioStreamRepeat::instance_playback() {
 	Ref<AudioStreamPlaybackRepeat> sample;
 	sample.instance();
@@ -625,11 +631,14 @@ void AudioStreamRepeat::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamRepeat::save_to_wav);
 
+	ClassDB::bind_method(D_METHOD("get_loop_index"), &AudioStreamRepeat::get_loop_index);
+	ClassDB::bind_method(D_METHOD("set_loop_index", "index"), &AudioStreamRepeat::set_loop_index);
+
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA-ADPCM"), "set_format", "get_format");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "Disabled,Forward,Ping-Pong,Backward"), "set_loop_mode", "get_loop_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_begin"), "set_loop_begin", "get_loop_begin");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_end"), "set_loop_end", "get_loop_end");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY, "loop_begin"), "set_loop_begin", "get_loop_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY, "loop_end"), "set_loop_end", "get_loop_end");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_rate"), "set_mix_rate", "get_mix_rate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stereo"), "set_stereo", "is_stereo");
 
@@ -644,14 +653,18 @@ void AudioStreamRepeat::_bind_methods() {
 }
 
 AudioStreamRepeat::AudioStreamRepeat() {
+	Vector<int> loop_array;
+	loop_array.push_back(0);
+
 	format = FORMAT_8_BITS;
 	loop_mode = LOOP_DISABLED;
 	stereo = false;
-	loop_begin = 0;
-	loop_end = 0;
+	loop_begin = loop_array;
+	loop_end = loop_array;
 	mix_rate = 44100;
 	data = nullptr;
 	data_bytes = 0;
+	loop_index = 0;
 }
 
 AudioStreamRepeat::~AudioStreamRepeat() {

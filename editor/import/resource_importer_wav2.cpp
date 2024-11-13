@@ -539,14 +539,17 @@ Error ResourceImporterWAV2::import(const String &p_source_file, const String &p_
 		}
 	}
 
+	Vector<int> loop_array;
+	loop_array.push_back(0);
+
 	Ref<AudioStreamRepeat> sample;
 	sample.instance();
 	sample->set_data(dst_data);
 	sample->set_format(dst_format);
 	sample->set_mix_rate(rate);
 	sample->set_loop_mode(loop_mode);
-	sample->set_loop_begin(loop_begin);
-	sample->set_loop_end(loop_end);
+	sample->set_loop_begin(loop_array);
+	sample->set_loop_end(loop_array);
 	sample->set_stereo(format_channels == 2);
 
 	ResourceSaver::save(p_save_path + ".repeat", sample);
