@@ -307,6 +307,11 @@ void AudioStreamPlaybackRepeat::mix(AudioFrame *p_buffer, float p_rate_scale, in
 			/* going forward */
 			if (loop_format != AudioStreamRepeat::LOOP_DISABLED && offset >= loop_end_fp) {
 				base->loop_index = (base->loop_index + 1)%base->loop_end.size();
+				if(base->queue_update){
+					base->queue_update = false;
+					base->loop_begin = base->new_loop_begin;
+					base->loop_end = base->new_loop_end;
+				}
 				loop_begin_fp = ((int64_t)base->loop_begin[base->loop_index] << MIX_FRAC_BITS);
 				/* loopend reached */
 
@@ -336,7 +341,7 @@ void AudioStreamPlaybackRepeat::mix(AudioFrame *p_buffer, float p_rate_scale, in
 			} else {
 				/* no loop, check for end of sample */
 				if (offset >= length_fp) {
-					active = false;
+					offset = loop_begin_fp;
 					break;
 				}
 			}
@@ -421,17 +426,19 @@ AudioStreamRepeat::LoopMode AudioStreamRepeat::get_loop_mode() const {
 }
 
 void AudioStreamRepeat::set_loop_begin(Vector<int> p_frame) {
-	loop_begin = p_frame;
+	new_loop_begin = p_frame;
+	queue_update = true;
 }
 Vector<int> AudioStreamRepeat::get_loop_begin() const {
 	return loop_begin;
 }
 
 void AudioStreamRepeat::set_loop_end(Vector<int> p_frame) {
-	loop_end = p_frame;
+	new_loop_end = p_frame;
 	if(loop_index >= p_frame.size()){
 		loop_index -= (loop_index - p_frame.size())+1;
 	}
+	queue_update = true;
 }
 Vector<int> AudioStreamRepeat::get_loop_end() const {
 	return loop_end;
@@ -665,6 +672,7 @@ AudioStreamRepeat::AudioStreamRepeat() {
 	data = nullptr;
 	data_bytes = 0;
 	loop_index = 0;
+	queue_update = false;
 }
 
 AudioStreamRepeat::~AudioStreamRepeat() {

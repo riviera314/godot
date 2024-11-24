@@ -109,6 +109,9 @@ private:
 	bool stereo;
 	Vector<int> loop_begin;
 	Vector<int> loop_end;
+	Vector<int> new_loop_begin;
+	Vector<int> new_loop_end;
+	bool queue_update;
 	int mix_rate;
 	void *data;
 	uint32_t data_bytes;
