@@ -311,6 +311,9 @@ void AudioStreamPlaybackRepeat::mix(AudioFrame *p_buffer, float p_rate_scale, in
 					base->queue_update = false;
 					base->loop_begin = base->new_loop_begin;
 					base->loop_end = base->new_loop_end;
+					if(base->loop_index >= base->loop_end.size()){
+						base->loop_index -= (base->loop_index - base->loop_end.size())+1;
+					}
 				}
 				loop_begin_fp = ((int64_t)base->loop_begin[base->loop_index] << MIX_FRAC_BITS);
 				/* loopend reached */
@@ -435,9 +438,6 @@ Vector<int> AudioStreamRepeat::get_loop_begin() const {
 
 void AudioStreamRepeat::set_loop_end(Vector<int> p_frame) {
 	new_loop_end = p_frame;
-	if(loop_index >= p_frame.size()){
-		loop_index -= (loop_index - p_frame.size())+1;
-	}
 	queue_update = true;
 }
 Vector<int> AudioStreamRepeat::get_loop_end() const {
