@@ -307,7 +307,7 @@ void AudioStreamPlaybackRepeat::mix(AudioFrame *p_buffer, float p_rate_scale, in
 			/* going forward */
 			if (loop_format != AudioStreamRepeat::LOOP_DISABLED && offset >= loop_end_fp) {
 				base->loop_index = (base->loop_index + 1)%base->loop_end.size();
-				if(base->queue_update){
+				if(base->queue_update && base->loop_index % 12 == 0){
 					base->queue_update = false;
 					base->loop_begin = base->new_loop_begin;
 					base->loop_end = base->new_loop_end;
