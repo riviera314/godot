@@ -207,6 +207,8 @@ public:
 
 	void on_enter_background();
 	void on_exit_background();
+
+	void system_theme_changed();
 };
 
 #endif // IPHONE_ENABLED

@@ -852,7 +852,8 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_WM_ABOUT:
 		case NOTIFICATION_CRASH:
 		case NOTIFICATION_APP_RESUMED:
-		case NOTIFICATION_APP_PAUSED: {
+		case NOTIFICATION_APP_PAUSED:
+		case NOTIFICATION_DARKMODE_CHANGED: {
 			get_root()->propagate_notification(p_notification);
 		} break;
 

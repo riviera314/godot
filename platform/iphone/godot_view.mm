@@ -197,6 +197,17 @@ static const int max_touches = 32;
 	[self clearTouches];
 }
 
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+	if (@available(iOS 13.0, *)) {
+		[super traitCollectionDidChange:previousTraitCollection];
+
+		if ([UITraitCollection currentTraitCollection].userInterfaceStyle != previousTraitCollection.userInterfaceStyle) {
+			OSIPhone::get_singleton()->system_theme_changed();
+		}
+	}
+}
+
+
 // Updates the OpenGL view when the timer fires
 - (void)drawView {
 	if (!self.isActive) {

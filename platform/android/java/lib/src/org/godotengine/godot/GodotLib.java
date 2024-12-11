@@ -61,6 +61,8 @@ public class GodotLib {
 	 */
 	public static native void ondestroy();
 
+	public static native void onNightModeChanged();
+
 	/**
 	 * Invoked on the GL thread to complete setup for the Godot native layer logic.
 	 * @param p_cmdline Command line arguments used to configure Godot native layer components.

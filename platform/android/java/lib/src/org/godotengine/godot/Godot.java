@@ -884,6 +884,17 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+    	super.onConfigurationChanged(newConfig);
+
+    	boolean newDarkMode = (newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+    	if (darkMode != newDarkMode) {
+        	darkMode = newDarkMode;
+        	GodotLib.onNightModeChanged();
+    	}
+	}
+
+	@Override
 	public void onPause() {
 		super.onPause();
 		activityResumed = false;

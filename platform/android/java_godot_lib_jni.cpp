@@ -185,6 +185,12 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env
 	_terminate(env, false);
 }
 
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onNightModeChanged(JNIEnv *env, jclass clazz) {
+	if (os_android->get_main_loop()) {
+		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_DARKMODE_CHANGED);
+	}
+}
+
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jclass clazz, jobjectArray p_cmdline, jobject p_godot_tts) {
 	setup_android_thread();
 
