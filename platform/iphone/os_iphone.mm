@@ -891,7 +891,7 @@ void OSIPhone::on_exit_background() {
 
 void OSIPhone::system_theme_changed(){
 	if (get_main_loop()) {
-		get_main_loop()->notification(MainLoop::NOTIFICATION_DARKMODE_CHANGED;
+		get_main_loop()->notification(MainLoop::NOTIFICATION_DARKMODE_CHANGED);
 	}
 }
 
