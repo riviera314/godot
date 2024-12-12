@@ -90,6 +90,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.content.res.Configuration;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.Keep;
@@ -145,6 +146,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	private boolean mStatePaused;
 	private boolean activityResumed;
 	private int mState;
+	private boolean darkMode;
 
 	// Used to dispatch events to the main thread.
 	private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
