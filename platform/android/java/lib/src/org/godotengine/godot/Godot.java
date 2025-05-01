@@ -222,6 +222,9 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		 */
 		@Nullable
 		protected View onMainCreateView(Activity activity) {
+			int currentNightMode = getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK;
+        	darkMode = currentNightMode == Configuration.UI_MODE_NIGHT_YES;
 			return null;
 		}
 
