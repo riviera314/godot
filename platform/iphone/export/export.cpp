@@ -2043,6 +2043,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 			tmp_app_path->make_dir_recursive(fname);
 			FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get("application/config/name").operator String() + "\";");
+			f->store_line("NSUserTrackingUsageDescription = \"" + ProjectSettings::get_singleton()->get("Admob/app_tracking_transparency").operator String() + "\";");
 		}
 
 		Set<String> languages;
@@ -2059,6 +2060,10 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 			String prop = "application/config/name_" + E->get();
 			if (ProjectSettings::get_singleton()->has_setting(prop)) {
 				f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get(prop).operator String() + "\";");
+			}
+			String prop2 = "Admob/app_tracking_transparency_" + E->get();
+			if (ProjectSettings::get_singleton()->has_setting(prop2)) {
+				f->store_line("NSUserTrackingUsageDescription = \"" + ProjectSettings::get_singleton()->get(prop2).operator String() + "\";");
 			}
 		}
 	}
