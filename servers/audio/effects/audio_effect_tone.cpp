@@ -2,7 +2,7 @@
 
 void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	float sr = AudioServer::get_singleton()->get_mix_rate();
-	Vector<float> released_index;
+	Vector<float> released_hz;
 
 	for (int i = 0; i < p_frame_count; i++) {
 		float sample = 0.0f;
@@ -22,8 +22,8 @@ void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame
 				}
 			} else {
 				env = 0.7f * std::max(1.0f - v.release_time / 0.1f, 0.0f);
-				if(env < 0.01){
-					released_index.push_back(i);
+				if(env < 0.0001 && released_hz.find(v.freq, 0) == -1){
+					released_hz.push_back(v.freq);
 				}
 			}
 
@@ -53,8 +53,10 @@ void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame
 
 		p_dst_frames[i] = AudioFrame(sample, sample);
 	}
-	for (int i = released_index.size() - 1; i >= 0; i--) {
-		voices.remove(released_index[i]);
+	for (int i = voices.size() - 1; i >= 0; i--) {
+		if(released_hz.find(voices[i].freq, 0) != -1){
+			voices.remove(i);
+		}
 	}
 }
 
