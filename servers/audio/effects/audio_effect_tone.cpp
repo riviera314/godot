@@ -2,14 +2,14 @@
 
 void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	float sr = AudioServer::get_singleton()->get_mix_rate();
-	Vector<float> released_hz;
+	Vector<int> released_index;
 
 	for (int i = 0; i < p_frame_count; i++) {
 		float sample = 0.0f;
 		int active_voices = 0;
 
 		for (int j = 0; j < voices.size(); j++) {
-			Voice &v = voices.write[j];
+			Voice v = voices[j];
 
 			float env = 0.0f;
 			if (!v.is_releasing) {
@@ -22,28 +22,28 @@ void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame
 				}
 			} else {
 				env = 0.7f * std::max(1.0f - v.release_time / 0.1f, 0.0f);
-				if(env < 0.0001 && released_hz.find(v.freq, 0) == -1){
-					released_hz.push_back(v.freq);
+				if(env < 0.0001 && released_index.find(j, 0) == -1){
+					released_index.push_back(j);
 				}
 			}
 
 			int index = int(v.phase * TABLE_SIZE) % TABLE_SIZE;
 			float frac = fmodf(v.phase * TABLE_SIZE, 1.0f);
 			int next = (index + 1) % TABLE_SIZE;
-			float wave = clarinet_table[index] * (1.0f - frac) + clarinet_table[next] * frac;
+			float wave = wave_table[index] * (1.0f - frac) + wave_table[next] * frac;
 			float s = wave * env;
 			
 			sample += s;
 			active_voices++;
 
-			v.phase += v.freq / sr;
-			if (v.phase >= 1.0f) {
-				v.phase -= 1.0f;
+			voices[j].phase += v.freq / sr;
+			if (voices[j].phase >= 1.0f) {
+				voices[j].phase -= 1.0f;
 			}
 
-			v.tone_time += 1.0f / sr;
+			voices[j].tone_time += 1.0f / sr;
 			if (v.is_releasing) {
-				v.release_time += 1.0f / sr;
+				voices[j].release_time += 1.0f / sr;
 			}
 		}
 
@@ -53,62 +53,65 @@ void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame
 
 		p_dst_frames[i] = AudioFrame(sample, sample);
 	}
-	for (int i = voices.size() - 1; i >= 0; i--) {
-		if(released_hz.find(voices[i].freq, 0) != -1){
-			voices.remove(i);
-		}
+	for(int i=0;i<released_index.size();i++){
+		voices.erase(released_index[i]);
 	}
 }
 
-void AudioEffectToneInstance::generate_clarinet_table() {
-	clarinet_table.resize(TABLE_SIZE);
-	int harmonics = 15;
-
+void AudioEffectToneInstance::generate_wave_table(InstrumentType type) {
+	wave_table.resize(TABLE_SIZE);
 	for (int i = 0; i < TABLE_SIZE; i++) {
 		float t = float(i) / TABLE_SIZE;
 		float val = 0.0f;
 
-		for (int n = 1; n <= harmonics; n += 2) {
-			val += sin(2.0f * Math_PI * n * t) / powf(n, 2.0f);
+		switch (type) {
+			case INSTRUMENT_CLARINET:
+				for (int n = 1; n <= 15; n += 2)
+					val += sin(2.0f * Math_PI * n * t) / powf(n, 2.0f);
+				break;
+			case INSTRUMENT_SAX:
+				for (int n = 1; n <= 15; n++)
+					val += sin(2.0f * Math_PI * n * t) / powf(n, 1.8f);
+				break;
+			case INSTRUMENT_FLUTE:
+				val += sin(2.0f * Math_PI * t);
+				val += 0.1f * sin(2.0f * Math_PI * 2 * t);
+				val += 0.05f * sin(2.0f * Math_PI * 3 * t);
+				break;
+			case INSTRUMENT_TRUMPET:
+				for (int n = 1; n <= 20; n++)
+					val += sin(2.0f * Math_PI * n * t) / powf(n, 1.2f);
+				break;
 		}
-		clarinet_table.write[i] = val;
+
+		wave_table.write[i] = val;
 	}
-
-	// ループの滑らかさのために最終サンプル = 最初にする
-	clarinet_table.write[TABLE_SIZE - 1] = clarinet_table[0];
+	wave_table.write[TABLE_SIZE - 1] = wave_table[0]; // wrap
 }
-
 
 bool AudioEffectToneInstance::process_silence() const {
 	return false;
 }
 
-void AudioEffectToneInstance::trigger_tone(float p_freq) {
+void AudioEffectToneInstance::trigger_tone(int index, float p_freq){
 	Voice v;
 	v.freq = p_freq;
 	v.phase = 0.0f;
 	v.tone_time = 0.0f;
 	v.is_releasing = false;
 	v.release_time = 0.0f;
-	voices.push_back(v);
+	voices[index] = v;
 }
-
-void AudioEffectToneInstance::release_tone(float p_freq) {
-	for (int i = 0; i < voices.size(); i++) {
-		if(voices[i].freq == p_freq){
-			Voice &v = voices.write[i];
-			v.is_releasing = true;
-			v.release_time = 0.0f;
-		}
-	}
+void AudioEffectToneInstance::release_tone(int index){
+	voices[index].is_releasing = true;
+	voices[index].release_time = 0.0f;
 }
-
-void AudioEffectToneInstance::set_freq(float p_freq){
-	
+void AudioEffectToneInstance::change_freq(int index, float p_freq){
+	voices[index].freq = p_freq;
 }
 
 void AudioEffectToneInstance::init(){
-	generate_clarinet_table();
+	
 }
 
 Ref<AudioEffectInstance> AudioEffectTone::instance() {
@@ -122,7 +125,8 @@ Ref<AudioEffectInstance> AudioEffectTone::instance() {
 void AudioEffectTone::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("trigger_tone"), &AudioEffectTone::trigger_tone);
 	ClassDB::bind_method(D_METHOD("release_tone"), &AudioEffectTone::release_tone);
-	ClassDB::bind_method(D_METHOD("set_freq"), &AudioEffectTone::set_freq);
+	ClassDB::bind_method(D_METHOD("change_freq"), &AudioEffectTone::change_freq);
+	ClassDB::bind_method(D_METHOD("set_instrument"), &AudioEffectTone::set_instrument);
 	// ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA-ADPCM"), "set_format", "get_format");
 }
 
@@ -134,14 +138,18 @@ AudioEffectTone::~AudioEffectTone() {
 	
 }
 
-void AudioEffectTone::trigger_tone(float p_freq) {
-	current_instance->trigger_tone(p_freq);
+void AudioEffectTone::trigger_tone(int index, float p_freq) {
+	current_instance->trigger_tone(index, p_freq);
 }
 
-void AudioEffectTone::release_tone(float p_freq) {
-	current_instance->release_tone(p_freq);
+void AudioEffectTone::release_tone(int index) {
+	current_instance->release_tone(index);
 }
 
-void AudioEffectTone::set_freq(float p_freq){
-	current_instance->set_freq(p_freq);
+void AudioEffectTone::change_freq(int index, float p_freq){
+	current_instance->change_freq(index, p_freq);
+}
+
+void AudioEffectTone::set_instrument(int type) {
+	current_instance->generate_wave_table((AudioEffectToneInstance::InstrumentType)type);
 }

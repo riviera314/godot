@@ -46,6 +46,13 @@ class AudioEffectToneInstance : public AudioEffectInstance {
 	GDCLASS(AudioEffectToneInstance, AudioEffectInstance);
 	friend class AudioEffectTone;
 
+	enum InstrumentType {
+		INSTRUMENT_CLARINET,
+		INSTRUMENT_SAX,
+		INSTRUMENT_FLUTE,
+		INSTRUMENT_TRUMPET
+	};
+
 	struct Voice {
 		float phase = 0.0f;
 		float tone_time = 1000.0f;
@@ -54,20 +61,20 @@ class AudioEffectToneInstance : public AudioEffectInstance {
 		float freq = 0.0f;
 	};
 
-	Vector<Voice> voices;
+	Map<int, Voice> voices;
 
 	const int TABLE_SIZE = 1024;
-	Vector<float> clarinet_table;
+	Vector<float> wave_table;
 
 public:
 	void init();
-	void generate_clarinet_table();
+	void generate_wave_table(InstrumentType type);
 
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 	virtual bool process_silence() const;
-	void trigger_tone(float p_freq);
-	void release_tone(float p_freq);
-	void set_freq(float p_freq);
+	void trigger_tone(int index, float p_freq);
+	void release_tone(int index);
+	void change_freq(int index, float p_freq);
 };
 
 class AudioEffectTone : public AudioEffect {
@@ -82,9 +89,10 @@ protected:
 public:
 	Ref<AudioEffectInstance> instance();
 
-	void trigger_tone(float p_freq);
-	void release_tone(float p_freqN);
-	void set_freq(float p_freq);
+	void trigger_tone(int index, float p_freq);
+	void release_tone(int index);
+	void change_freq(int index, float p_freq);
+	void set_instrument(int type);
 
 	AudioEffectTone();
 	~AudioEffectTone();
