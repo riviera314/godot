@@ -27,7 +27,12 @@ void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame
 				}
 			}
 
-			float s = sinf(v.phase * 2.0f * Math_PI) * env;
+			int index = int(v.phase * TABLE_SIZE) % TABLE_SIZE;
+			float frac = fmodf(v.phase * TABLE_SIZE, 1.0f);
+			int next = (index + 1) % TABLE_SIZE;
+			float wave = clarinet_table[index] * (1.0f - frac) + clarinet_table[next] * frac;
+			float s = wave * env;
+			
 			sample += s;
 			active_voices++;
 
@@ -52,6 +57,25 @@ void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame
 		voices.remove(released_index[i]);
 	}
 }
+
+void AudioEffectToneInstance::generate_clarinet_table() {
+	clarinet_table.resize(TABLE_SIZE);
+	int harmonics = 15;
+
+	for (int i = 0; i < TABLE_SIZE; i++) {
+		float t = float(i) / TABLE_SIZE;
+		float val = 0.0f;
+
+		for (int n = 1; n <= harmonics; n += 2) {
+			val += sin(2.0f * Math_PI * n * t) / powf(n, 2.0f);
+		}
+		clarinet_table.write[i] = val;
+	}
+
+	// ループの滑らかさのために最終サンプル = 最初にする
+	clarinet_table.write[TABLE_SIZE - 1] = clarinet_table[0];
+}
+
 
 bool AudioEffectToneInstance::process_silence() const {
 	return false;
@@ -81,9 +105,14 @@ void AudioEffectToneInstance::set_freq(float p_freq){
 	
 }
 
+void AudioEffectToneInstance::init(){
+	generate_clarinet_table();
+}
+
 Ref<AudioEffectInstance> AudioEffectTone::instance() {
 	Ref<AudioEffectToneInstance> ins;
 	ins.instance();
+	ins->init();
 	current_instance = ins;
 	return ins;
 }

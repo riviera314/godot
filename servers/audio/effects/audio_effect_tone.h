@@ -56,7 +56,13 @@ class AudioEffectToneInstance : public AudioEffectInstance {
 
 	Vector<Voice> voices;
 
+	const int TABLE_SIZE = 1024;
+	Vector<float> clarinet_table;
+
 public:
+	void init();
+	void generate_clarinet_table();
+
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 	virtual bool process_silence() const;
 	void trigger_tone(float p_freq);
