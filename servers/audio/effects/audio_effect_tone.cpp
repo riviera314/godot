@@ -22,7 +22,7 @@ void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame
 					env = 0.7f;
 				}
 			} else {
-				env = 0.7f * std::max(1.0f - v.release_time / 0.1f, 0.0f);
+				env = 0.7f * fmax(1.0f - v.release_time / 0.1f, 0.0f);
 				if(env < 0.0001 && released_index.find(E->key(), 0) == -1){
 					released_index.push_back(E->key());
 				}
