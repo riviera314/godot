@@ -47,6 +47,7 @@ class AudioEffectToneInstance : public AudioEffectInstance {
 	friend class AudioEffectTone;
 
 	enum InstrumentType {
+		INSTRUMENT_SINE,
 		INSTRUMENT_CLARINET,
 		INSTRUMENT_SAX,
 		INSTRUMENT_FLUTE,

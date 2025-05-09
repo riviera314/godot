@@ -65,6 +65,13 @@ void AudioEffectToneInstance::generate_wave_table(InstrumentType type) {
 		float val = 0.0f;
 
 		switch (type) {
+			case INSTRUMENT_SINE:
+				for (int i = 0; i < TABLE_SIZE; i++) {
+					float t = float(i) / TABLE_SIZE;
+					val = sin(2.0f * Math_PI * t); // 基本のサイン波
+					wave_table.write[i] = val;
+				}
+				break;
 			case INSTRUMENT_CLARINET:
 				for (int n = 1; n <= 15; n += 2)
 					val += sin(2.0f * Math_PI * n * t) / powf(n, 2.0f);
