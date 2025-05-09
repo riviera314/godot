@@ -46,11 +46,22 @@ class AudioEffectToneInstance : public AudioEffectInstance {
 	GDCLASS(AudioEffectToneInstance, AudioEffectInstance);
 	friend class AudioEffectTone;
 
+	struct Voice {
+		float phase = 0.0f;
+		float tone_time = 1000.0f;
+		bool is_releasing = false;
+		float release_time = 0.0f;
+		float freq = 0.0f;
+	};
+
+	Vector<Voice> voices;
+
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 	virtual bool process_silence() const;
-
-	Ref<AudioEffectTone> base;
+	void trigger_tone(float p_freq);
+	void release_tone(float p_freq);
+	void set_freq(float p_freq);
 };
 
 class AudioEffectTone : public AudioEffect {
@@ -60,17 +71,17 @@ class AudioEffectTone : public AudioEffect {
 protected:
 	static void _bind_methods();
 
+	Ref<AudioEffectToneInstance> current_instance;
+
 public:
 	Ref<AudioEffectInstance> instance();
+
+	void trigger_tone(float p_freq);
+	void release_tone(float p_freqN);
 	void set_freq(float p_freq);
-	float get_freq() const;
 
 	AudioEffectTone();
 	~AudioEffectTone();
-
-	float freq = 440.0;
-	float phase = 0.0;
-	float sample_rate = 44100.0;
 };
 
 #endif // AUDIO_EFFECT_TONE_H
