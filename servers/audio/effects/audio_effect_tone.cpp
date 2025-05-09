@@ -7,9 +7,10 @@ void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame
 	for (int i = 0; i < p_frame_count; i++) {
 		float sample = 0.0f;
 		int active_voices = 0;
+		float power_sum = 0.0;
 
-		for (int j = 0; j < voices.size(); j++) {
-			Voice v = voices[j];
+		for (Map<int, Voice>::Element *E = voices.front(); E; E = E->next()) {
+			Voice &v = E->value();
 
 			float env = 0.0f;
 			if (!v.is_releasing) {
@@ -22,8 +23,8 @@ void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame
 				}
 			} else {
 				env = 0.7f * std::max(1.0f - v.release_time / 0.1f, 0.0f);
-				if(env < 0.0001 && released_index.find(j, 0) == -1){
-					released_index.push_back(j);
+				if(env < 0.0001 && released_index.find(E->key(), 0) == -1){
+					released_index.push_back(E->key());
 				}
 			}
 
@@ -32,26 +33,25 @@ void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame
 			int next = (index + 1) % TABLE_SIZE;
 			float wave = wave_table[index] * (1.0f - frac) + wave_table[next] * frac;
 			float s = wave * env;
+			power_sum += s * s;
 			
 			sample += s;
 			active_voices++;
 
-			voices[j].phase += v.freq / sr;
-			if (voices[j].phase >= 1.0f) {
-				voices[j].phase -= 1.0f;
-			}
+			v.phase = fmod(v.phase + v.freq / sr, 1.0f);
 
-			voices[j].tone_time += 1.0f / sr;
+			v.tone_time += 1.0f / sr;
 			if (v.is_releasing) {
-				voices[j].release_time += 1.0f / sr;
+				v.release_time += 1.0f / sr;
 			}
 		}
 
 		if (active_voices > 0) {
-			sample /= active_voices;
+			float rms = sqrt(power_sum / active_voices);
+			sample /= MAX(rms, 1.0);
 		}
 
-		p_dst_frames[i] = AudioFrame(sample, sample);
+		p_dst_frames[i] = AudioFrame(tanh(sample), tanh(sample));
 	}
 	for(int i=0;i<released_index.size();i++){
 		voices.erase(released_index[i]);
@@ -94,9 +94,21 @@ bool AudioEffectToneInstance::process_silence() const {
 }
 
 void AudioEffectToneInstance::trigger_tone(int index, float p_freq){
+	if (voices.has(index)) {
+		Voice &v = voices[index];
+		if (v.is_releasing) {
+			// 途中で復活させる
+			v.is_releasing = false;
+			v.release_time = 0.0f;
+			v.tone_time = 0.0f;
+			v.freq = p_freq;
+			return;
+		}
+	}
+
 	Voice v;
 	v.freq = p_freq;
-	v.phase = 0.0f;
+	v.phase = Math::randf();
 	v.tone_time = 0.0f;
 	v.is_releasing = false;
 	v.release_time = 0.0f;
