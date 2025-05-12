@@ -218,6 +218,13 @@ public class GodotIO {
 					result[3] -= insetTop*2;
 				}
 			}
+			else {
+				// cutout がない＝ノッチがない場合も statusBar に考慮
+				Insets statusBarInsets = insets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars());
+				if (statusBarInsets != null) {
+					result[1] = statusBarInsets.top;
+				}
+			}
 		}
 		return result;
 	}
