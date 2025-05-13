@@ -3078,7 +3078,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			cmdline.push_back(apk_build_command);
 		}
 
-		String admob_application_id = p_preset->get("Admob/application_id_android");
+		String admob_application_id = ProjectSettings::get_singleton()->get("Admob/application_id_android");
 
 		cmdline.push_back("-p"); // argument to specify the start directory.
 		cmdline.push_back(build_path); // start directory.
