@@ -38,6 +38,8 @@
 	<string>$xcodever</string>
 	<key>DTXcodeBuild</key>
 	<string>$xcodebuild</string>
+	<key>GADApplicationIdentifier</key>
+	<string>$admob_application_id</string>
 $usage_descriptions
 	<key>NSHumanReadableCopyright</key>
 	<string>$copyright</string>

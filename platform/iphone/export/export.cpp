@@ -613,6 +613,8 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			strnew += lines[i].replace("$godot_archs", p_config.architectures) + "\n";
 		} else if (lines[i].find("$linker_flags") != -1) {
 			strnew += lines[i].replace("$linker_flags", p_config.linker_flags) + "\n";
+		} else if (lines[i].find("$admob_application_id") != -1) {
+			strnew += lines[i].replace("$admob_application_id",String(ProjectSettings::get_singleton()->get("Admob/application_id_ios"))) + "\n";
 		} else if (lines[i].find("$targeted_device_family") != -1) {
 			String xcode_value;
 			switch ((int)p_preset->get("application/targeted_device_family")) {

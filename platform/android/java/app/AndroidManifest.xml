@@ -32,6 +32,10 @@
         <meta-data
             android:name="org.godotengine.editor.version"
             android:value="${godotEditorVersion}" />
+        
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobApplicationID}" />
 
         <!-- The following metadata values are replaced when Godot exports, modifying them here has no effect. -->
         <!-- Do these changes in the export preset. Adding new ones is fine. -->

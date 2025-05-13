@@ -80,6 +80,10 @@ ext.getGodotEditorVersion = { ->
     return editorVersion
 }
 
+ext.getAdmobApplicationID = { ->
+    return project.hasProperty("admob_application_id") ? project.property("admob_application_id") : ""
+}
+
 ext.getGodotLibraryVersionCode = { ->
     String versionName = ""
     int versionCode = 1
