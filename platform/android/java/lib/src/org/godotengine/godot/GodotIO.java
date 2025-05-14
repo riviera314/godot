@@ -202,22 +202,24 @@ public class GodotIO {
 				}
 			}
 
+			Insets statusBarInsets = insets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars());
 			if (cutout != null) {
 				int insetLeft = cutout.getSafeInsetLeft();
 				int insetTop = cutout.getSafeInsetTop();
 				result[0] = insetLeft;
-				result[1] = insetTop;
+				result[2] -= insetLeft + cutout.getSafeInsetRight();
+				result[3] -= insetTop + cutout.getSafeInsetBottom();
 
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-					result[2] -= insetLeft + cutout.getSafeInsetRight();
-					result[3] -= insetTop + cutout.getSafeInsetBottom();
-				} else {
-					result[2] -= insetLeft * 2;
-					result[3] -= insetTop * 2;
+				if (statusBarInsets != null) {
+					if (getScreenOrientation() == SCREEN_LANDSCAPE) {
+						result[1] = Math.max(statusBarInsets.top, insetTop);
+						result[3] -= statusBarInsets.top + statusBarInsets.bottom;
+					} else {
+						result[1] = statusBarInsets.top;
+						result[3] -= statusBarInsets.top;
+					}
 				}
 			} else {
-				// ノッチなし端末の status bar 対応
-				Insets statusBarInsets = insets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars());
 				if (statusBarInsets != null) {
 					if (getScreenOrientation() == SCREEN_LANDSCAPE) {
 						result[1] = statusBarInsets.top;
