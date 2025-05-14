@@ -223,8 +223,8 @@ public class GodotIO {
 				Insets statusBarInsets = insets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars());
 				if (statusBarInsets != null) {
 					if (getScreenOrientation() == SCREEN_LANDSCAPE) {
-						result[0] = Math.max(result[0], statusBarInsets.left);
-						result[2] -= statusBarInsets.left + statusBarInsets.right;
+						result[0] = Math.max(result[0], statusBarInsets.top);
+						result[2] -= statusBarInsets.top + statusBarInsets.bottom;
 					} else {
 						result[1] = statusBarInsets.top;
 						result[3] -= statusBarInsets.top;
