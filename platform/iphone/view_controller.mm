@@ -199,7 +199,7 @@
 		case OS::SCREEN_PORTRAIT:
 			return UIInterfaceOrientationMaskPortrait;
 		case OS::SCREEN_REVERSE_LANDSCAPE:
-			return UIInterfaceOrientationMaskLandscapeRight;
+			return UIInterfaceOrientationMaskLandscapeLeft;
 		case OS::SCREEN_REVERSE_PORTRAIT:
 			return UIInterfaceOrientationMaskPortraitUpsideDown;
 		case OS::SCREEN_SENSOR_LANDSCAPE:
@@ -209,7 +209,7 @@
 		case OS::SCREEN_SENSOR:
 			return UIInterfaceOrientationMaskAll;
 		case OS::SCREEN_LANDSCAPE:
-			return UIInterfaceOrientationMaskLandscapeLeft;
+			return UIInterfaceOrientationMaskLandscapeRight;
 	}
 }
 
