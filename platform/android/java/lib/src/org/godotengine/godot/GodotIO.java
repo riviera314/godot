@@ -186,46 +186,53 @@ public class GodotIO {
 		display.getRealSize(size);
 
 		int[] result = { 0, 0, size.x, size.y };
+
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 			WindowInsets insets = activity.getWindow().getDecorView().getRootWindowInsets();
 			DisplayCutout cutout = insets.getDisplayCutout();
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-				if(getScreenOrientation() == SCREEN_LANDSCAPE){
+				if (getScreenOrientation() == SCREEN_LANDSCAPE) {
 					final RoundedCorner topRight = insets.getRoundedCorner(RoundedCorner.POSITION_TOP_RIGHT);
 					if (topRight != null) {
 						result[2] -= topRight.getRadius();
 					}
-				}
-				else {
+				} else {
 					Insets navBarInset = insets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
 					if (navBarInset != null) {
 						result[3] -= navBarInset.bottom;
 					}
 				}
 			}
+
 			if (cutout != null) {
 				int insetLeft = cutout.getSafeInsetLeft();
 				int insetTop = cutout.getSafeInsetTop();
 				result[0] = insetLeft;
 				result[1] = insetTop;
+
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 					result[2] -= insetLeft + cutout.getSafeInsetRight();
 					result[3] -= insetTop + cutout.getSafeInsetBottom();
+				} else {
+					result[2] -= insetLeft * 2;
+					result[3] -= insetTop * 2;
 				}
-				else {
-					result[2] -= insetLeft*2;
-					result[3] -= insetTop*2;
-				}
-			}
-			else {
-				// cutout がない＝ノッチがない場合も statusBar に考慮
+			} else {
+				// ノッチなし端末の status bar 対応
 				Insets statusBarInsets = insets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars());
 				if (statusBarInsets != null) {
-					result[1] = statusBarInsets.top;
+					if (getScreenOrientation() == SCREEN_LANDSCAPE) {
+						result[0] = Math.max(result[0], statusBarInsets.left);
+						result[2] -= statusBarInsets.left + statusBarInsets.right;
+					} else {
+						result[1] = statusBarInsets.top;
+						result[3] -= statusBarInsets.top;
+					}
 				}
 			}
 		}
+
 		return result;
 	}
 
