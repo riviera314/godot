@@ -193,10 +193,7 @@ public class GodotIO {
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 				if (getScreenOrientation() == SCREEN_LANDSCAPE) {
-					final RoundedCorner topRight = insets.getRoundedCorner(RoundedCorner.POSITION_TOP_RIGHT);
-					if (topRight != null) {
-						result[2] -= topRight.getRadius();
-					}
+
 				} else {
 					Insets navBarInset = insets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
 					if (navBarInset != null) {
