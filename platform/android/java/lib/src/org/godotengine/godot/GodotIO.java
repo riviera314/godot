@@ -216,7 +216,6 @@ public class GodotIO {
 						result[3] -= statusBarInsets.top + statusBarInsets.bottom;
 					} else {
 						result[1] = statusBarInsets.top;
-						result[3] -= statusBarInsets.top;
 					}
 				}
 			} else {
@@ -226,7 +225,6 @@ public class GodotIO {
 						result[3] -= statusBarInsets.top + statusBarInsets.bottom;
 					} else {
 						result[1] = statusBarInsets.top;
-						result[3] -= statusBarInsets.top;
 					}
 				}
 			}
