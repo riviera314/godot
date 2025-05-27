@@ -220,7 +220,10 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 	bufferList.mNumberBuffers = 1;
 	bufferList.mBuffers[0].mData = ad->input_buf.ptrw();
 	bufferList.mBuffers[0].mNumberChannels = ad->capture_channels;
-	bufferList.mBuffers[0].mDataByteSize = ad->input_buf.size() * sizeof(int16_t);
+	bufferList.mBuffers[0].mDataByteSize = inNumberFrames * ad->capture_channels * sizeof(int16_t);
+	if ((unsigned int)(inNumberFrames * ad->capture_channels) > ad->input_buf.size()) {
+    	ad->input_buf.resize(inNumberFrames * ad->capture_channels);
+	}
 
 	OSStatus result = AudioUnitRender(ad->input_unit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &bufferList);
 	if (result == noErr) {
