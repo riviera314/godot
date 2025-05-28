@@ -134,7 +134,7 @@ void AudioDriverOpenSL::start() {
 	/* Setup the format of the content in the buffer queue */
 	pcm.formatType = SL_DATAFORMAT_PCM;
 	pcm.numChannels = 2;
-	pcm.samplesPerSec = SL_SAMPLINGRATE_44_1;
+	pcm.samplesPerSec = SL_SAMPLINGRATE_48;
 	pcm.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
 	pcm.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
 	pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
@@ -220,7 +220,7 @@ Error AudioDriverOpenSL::capture_init_device() {
 	SLDataFormat_PCM format_pcm = {
 		SL_DATAFORMAT_PCM,
 		1,
-		SL_SAMPLINGRATE_44_1,
+		SL_SAMPLINGRATE_48,
 		SL_PCMSAMPLEFORMAT_FIXED_16,
 		SL_PCMSAMPLEFORMAT_FIXED_16,
 		SL_SPEAKER_FRONT_CENTER,
@@ -297,7 +297,7 @@ Error AudioDriverOpenSL::capture_stop() {
 }
 
 int AudioDriverOpenSL::get_mix_rate() const {
-	return 44100; // hardcoded for Android, as selected by SL_SAMPLINGRATE_44_1
+	return 48000; // hardcoded for Android, as selected by SL_SAMPLINGRATE_48
 }
 
 AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {
