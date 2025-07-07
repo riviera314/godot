@@ -2,61 +2,64 @@
 
 void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	float sr = AudioServer::get_singleton()->get_mix_rate();
-	Vector<int> released_index;
+	float inv_sr = 1.0f / sr;
+
+	Set<int> released_index;
 
 	for (int i = 0; i < p_frame_count; i++) {
 		float sample = 0.0f;
-		int active_voices = 0;
-		float power_sum = 0.0;
+		float active_voices = 0;
+		int count = 0;
+		int count2 = 0;
 
 		for (Map<int, Voice>::Element *E = voices.front(); E; E = E->next()) {
 			Voice &v = E->value();
 
-			float env = 0.0f;
+			float env;
 			if (!v.is_releasing) {
-				if (v.tone_time < 0.01f) {
-					env = v.tone_time / 0.01f;
-				} else if (v.tone_time < 0.2f) {
+				if (v.tone_time < 0.01f)
+					env = v.tone_time * 100.0f;
+				else if (v.tone_time < 0.2f)
 					env = 1.0f - (v.tone_time - 0.01f) * (0.3f / 0.19f);
-				} else {
+				else
 					env = 0.7f;
-				}
+				count++;
 			} else {
-				env = 0.7f * fmax(1.0f - v.release_time / 0.1f, 0.0f);
-				if(env < 0.0001 && released_index.find(E->key(), 0) == -1){
-					released_index.push_back(E->key());
-				}
+				env = 0.7f * expf(-v.release_time * 30.0f);
+				if (env < 0.00001f)
+					released_index.insert(E->key());
+				count2++;
 			}
 
-			int index = int(v.phase * TABLE_SIZE) % TABLE_SIZE;
+			int idx = int(v.phase * TABLE_SIZE) & (TABLE_SIZE - 1); // TABLE_SIZEが2のべきなら高速
+			int next = (idx + 1) & (TABLE_SIZE - 1);
 			float frac = fmodf(v.phase * TABLE_SIZE, 1.0f);
-			int next = (index + 1) % TABLE_SIZE;
-			float wave = wave_table[index] * (1.0f - frac) + wave_table[next] * frac;
-			float s = wave * env;
-			power_sum += s * s;
-			
-			sample += s;
-			active_voices++;
 
-			v.phase = fmod(v.phase + v.freq / sr, 1.0f);
+			float wave = wave_table[idx] * (1.0f - frac) + wave_table[next] * frac;
+			sample += wave * env;
 
-			v.tone_time += 1.0f / sr;
-			if (v.is_releasing) {
-				v.release_time += 1.0f / sr;
-			}
+			active_voices += env;
+			v.phase = fmodf(v.phase + v.freq * inv_sr, 1.0f);
+			v.tone_time += inv_sr;
+			if (v.is_releasing)
+				v.release_time += inv_sr;
 		}
 
-		if (active_voices > 0) {
-			float rms = sqrt(power_sum / active_voices);
-			sample /= MAX(rms, 1.0);
+		if (count > 0) {
+			sample *= 0.6f / float(active_voices);
+		}
+		else{
+			sample *= 0.6f / (0.7f*count2);
 		}
 
-		p_dst_frames[i] = AudioFrame(tanh(sample), tanh(sample));
+		p_dst_frames[i] = AudioFrame(sample, sample);
 	}
-	for(int i=0;i<released_index.size();i++){
-		voices.erase(released_index[i]);
+
+	for (Set<int>::Element *E = released_index.front(); E; E = E->next()) {
+		voices.erase(E->get());
 	}
 }
+
 
 void AudioEffectToneInstance::generate_wave_table(InstrumentType type) {
 	wave_table.resize(TABLE_SIZE);

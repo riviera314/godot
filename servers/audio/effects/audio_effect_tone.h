@@ -64,7 +64,7 @@ class AudioEffectToneInstance : public AudioEffectInstance {
 
 	Map<int, Voice> voices;
 
-	const int TABLE_SIZE = 1024;
+	const int TABLE_SIZE = 1024/4;
 	Vector<float> wave_table;
 
 public:
