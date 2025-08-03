@@ -8,27 +8,31 @@ void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame
 
 	for (int i = 0; i < p_frame_count; i++) {
 		float sample = 0.0f;
-		float active_voices = 0;
-		int count = 0;
-		int count2 = 0;
+
+		float time_sum = 0;
 
 		for (Map<int, Voice>::Element *E = voices.front(); E; E = E->next()) {
 			Voice &v = E->value();
 
 			float env;
 			if (!v.is_releasing) {
-				if (v.tone_time < 0.01f)
-					env = v.tone_time * 100.0f;
-				else if (v.tone_time < 0.2f)
+				if (v.tone_time < 0.01f){
+					env = 1.0f - expf(-v.tone_time * 300.0f);
+					time_sum += v.tone_time*100.0f;
+				}
+				else if (v.tone_time < 0.2f){
 					env = 1.0f - (v.tone_time - 0.01f) * (0.3f / 0.19f);
-				else
+					time_sum += 1.0f;
+				}
+				else{
 					env = 0.7f;
-				count++;
+					time_sum += 1.0f;
+				}
 			} else {
 				env = 0.7f * expf(-v.release_time * 30.0f);
 				if (env < 0.00001f)
 					released_index.insert(E->key());
-				count2++;
+				time_sum += std::max(1.0f - v.release_time*5.0f, 0.0f);
 			}
 
 			int idx = int(v.phase * TABLE_SIZE) & (TABLE_SIZE - 1); // TABLE_SIZEが2のべきなら高速
@@ -37,20 +41,16 @@ void AudioEffectToneInstance::process(const AudioFrame *p_src_frames, AudioFrame
 
 			float wave = wave_table[idx] * (1.0f - frac) + wave_table[next] * frac;
 			sample += wave * env;
-
-			active_voices += env;
 			v.phase = fmodf(v.phase + v.freq * inv_sr, 1.0f);
 			v.tone_time += inv_sr;
 			if (v.is_releasing)
 				v.release_time += inv_sr;
 		}
 
-		if (count > 0) {
-			sample *= 0.6f / float(active_voices);
-		}
-		else{
-			sample *= 0.6f / (0.7f*count2);
-		}
+		sample *= 0.5f;
+		sample /= std::max(time_sum, 1.0f);
+
+		sample = CLAMP(sample, -1.0f, 1.0f);
 
 		p_dst_frames[i] = AudioFrame(sample, sample);
 	}
@@ -126,7 +126,15 @@ void AudioEffectToneInstance::trigger_tone(int index, float p_freq){
 }
 void AudioEffectToneInstance::release_tone(int index){
 	voices[index].is_releasing = true;
-	voices[index].release_time = 0.0f;
+	if (voices[index].tone_time < 0.01f){
+		voices[index].release_time = -1.0f / 30.0f * logf((1.0f - expf(-voices[index].tone_time * 300.0f)) / 0.7f);
+	}
+	else if (voices[index].tone_time < 0.2f){
+		voices[index].release_time = -1.0f / 30.0f * logf((10.0f / 7.0f) * (1.0f - (voices[index].tone_time - 0.01f) * 30.0f / 19.0f));
+	}
+	else{
+		voices[index].release_time = 0.0f;
+	}
 }
 void AudioEffectToneInstance::change_freq(int index, float p_freq){
 	voices[index].freq = p_freq;
