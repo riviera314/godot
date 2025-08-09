@@ -61,7 +61,7 @@
 	<key>CADisableMinimumFrameDurationOnPhone</key><true/>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>audio</string>
+		$background_mode_list
 	</array>
 	<key>GADApplicationIdentifier</key>
     <string>$admob_application_id</string>
