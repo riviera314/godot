@@ -192,13 +192,9 @@ public class GodotIO {
 			DisplayCutout cutout = insets.getDisplayCutout();
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-				if (getScreenOrientation() == SCREEN_LANDSCAPE) {
-
-				} else {
-					Insets navBarInset = insets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
-					if (navBarInset != null) {
-						result[3] -= navBarInset.bottom;
-					}
+				Insets navBarInset = insets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
+				if (navBarInset != null) {
+					result[3] -= navBarInset.bottom;
 				}
 			}
 
