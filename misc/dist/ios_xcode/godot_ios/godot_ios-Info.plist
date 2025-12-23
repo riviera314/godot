@@ -56,6 +56,17 @@
 	<array>
 		$interface_orientations
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>$url_scheme</string>
+			</array>
+		</dict>
+	</array>
 	$additional_plist_content
 	$plist_launch_screen_name
 	<key>CADisableMinimumFrameDurationOnPhone</key><true/>
