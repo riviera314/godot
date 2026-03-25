@@ -430,7 +430,6 @@ AudioStreamRepeat::LoopMode AudioStreamRepeat::get_loop_mode() const {
 
 void AudioStreamRepeat::set_loop_begin(Vector<int> p_frame) {
 	new_loop_begin = p_frame;
-	queue_update = true;
 }
 Vector<int> AudioStreamRepeat::get_loop_begin() const {
 	return loop_begin;
